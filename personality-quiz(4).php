@@ -421,7 +421,7 @@ class Personality_Quiz {
         if ($post_type !== 'personality_quiz') return;
         
         wp_enqueue_media();
-        wp_enqueue_style('pq-styles', plugin_dir_url(__FILE__) . 'pq-styles.css', [], '1.0.0');
+        wp_enqueue_style('pq-styles', plugin_dir_url(__FILE__) . 'pq-styles.css', [], '1.0.1');
         wp_enqueue_script('pq-scripts', plugin_dir_url(__FILE__) . 'pq-scripts.js', ['jquery'], '1.0.0', true);
         wp_localize_script('pq-scripts', 'pqAdmin', [
             'confirmResult' => __('Remove this result?', 'personality-quiz'),
@@ -433,7 +433,7 @@ class Personality_Quiz {
     
     public function frontend_assets() {
         if (!is_singular() && !has_shortcode(get_post()->post_content ?? '', 'personality_quiz')) return;
-        wp_enqueue_style('pq-styles', plugin_dir_url(__FILE__) . 'pq-styles.css', [], '1.0.0');
+        wp_enqueue_style('pq-styles', plugin_dir_url(__FILE__) . 'pq-styles.css', [], '1.0.1');
         wp_enqueue_script('pq-scripts', plugin_dir_url(__FILE__) . 'pq-scripts.js', [], '1.0.0', true);
     }
 }
