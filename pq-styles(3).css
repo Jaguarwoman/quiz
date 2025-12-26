@@ -210,8 +210,6 @@
 .pq-image-preview {
     width: 120px;
     height: 80px;
-    background: #f0f0f1;
-    border: 1px dashed #c3c4c7;
     border-radius: 4px;
     display: flex;
     align-items: center;
@@ -309,10 +307,6 @@
     margin: 0 auto;
     box-sizing: border-box;
     --pq-image-column: 32%;
-    --pq-image-min-width: 24%;
-    --pq-question-image-min-height: clamp(14vh, 22vw, 20vh);
-    --pq-result-image-min-height: clamp(20vh, 28vw, 28vh);
-    --pq-image-max: 40%;
     color: inherit;
     font-family: inherit;
     font-size: 1rem;
@@ -353,7 +347,10 @@
     display: flex;
     flex-direction: row;
     gap: 2rem;
-    align-items: stretch;
+    
+    /* Fix: Columns are independent. Image won't stretch row automatically. */
+    align-items: flex-start; 
+    
     margin-bottom: 2.5rem;
     padding-bottom: 2.5rem;
     border-bottom: 1px solid rgba(0, 0, 0, 0.1);
@@ -365,30 +362,38 @@
     border-bottom: none;
 }
 
-/* Question Image Column - FIXED WIDTH */
+/* Question Image Column */
 .pq-quiz .pq-question-image {
     flex: 0 1 var(--pq-image-column);
     width: var(--pq-image-column);
-    max-width: var(--pq-image-max);
-    min-width: var(--pq-image-min-width);
-    min-height: var(--pq-question-image-min-height);
-    align-self: stretch;
+    min-width: 200px;
+    
+    /* Height will be controlled by JS to match the Text Column */
+    
     display: flex;
     overflow: hidden;
+    border-radius: 8px;
 }
 
 .pq-quiz .pq-question-image img {
     width: 100%;
-    height: 100%;
+    height: 100%; /* Will fill whatever height JS sets */
     display: block;
     border-radius: 8px;
-    object-fit: cover;
+    object-fit: contain; /* Never crop */
+    object-position: center;
 }
 
 /* Question Content Column */
 .pq-quiz .pq-question-content {
     flex: 1 1 0%;
     min-width: 0;
+    
+    /* Fix: Safety Minimum is HERE. 
+       If text is short, this column is 250px tall. 
+       If text is long, this column is TALL. 
+       JS will make the image match this height. */
+    min-height: 250px !important; 
 }
 
 /* Question Text */
@@ -502,24 +507,23 @@
     display: none;
 }
 
-/* Results - Two Column */
+/* Results */
 .pq-quiz .pq-result {
     display: flex;
     flex-direction: row;
     gap: 2rem;
-    align-items: stretch;
+    align-items: flex-start;
     padding: 2rem 0;
 }
 
 .pq-quiz .pq-result-image {
     flex: 0 1 var(--pq-image-column);
     width: var(--pq-image-column);
-    max-width: var(--pq-image-max);
-    min-width: var(--pq-image-min-width);
-    min-height: var(--pq-result-image-min-height);
-    align-self: stretch;
+    min-width: 200px;
+    min-height: 250px !important;
     display: flex;
     overflow: hidden;
+    border-radius: 8px;
 }
 
 .pq-quiz .pq-result-image img {
@@ -528,7 +532,8 @@
     display: block;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    object-fit: cover;
+    object-fit: contain;
+    object-position: center;
 }
 
 .pq-quiz .pq-result-content {
@@ -628,13 +633,6 @@
 
 /* Mobile */
 @media screen and (max-width: 768px) {
-    .pq-quiz {
-        --pq-image-min-width: 100%;
-        --pq-question-image-min-height: clamp(18vh, 50vw, 22vh);
-        --pq-result-image-min-height: clamp(24vh, 60vw, 28vh);
-        --pq-image-max: 100%;
-    }
-
     .pq-quiz .pq-question.active {
         flex-direction: column;
         gap: 1.5rem;
@@ -647,23 +645,7 @@
         min-width: 0;
         margin: 0 auto;
     }
-
-    .pq-quiz .pq-question-content {
-        width: 100%;
-    }
-
-    .pq-quiz .pq-question-text {
-        text-align: center;
-    }
-
-    .pq-quiz .pq-navigation {
-        flex-direction: column-reverse;
-    }
-
-    .pq-quiz .pq-nav-btn {
-        width: 100%;
-    }
-
+    
     .pq-quiz .pq-result {
         flex-direction: column;
         gap: 1.5rem;
@@ -677,9 +659,21 @@
         margin: 0 auto;
     }
 
+    .pq-quiz .pq-question-content,
     .pq-quiz .pq-result-content {
         width: 100%;
+    }
+
+    .pq-quiz .pq-question-text {
         text-align: center;
+    }
+
+    .pq-quiz .pq-navigation {
+        flex-direction: column-reverse;
+    }
+
+    .pq-quiz .pq-nav-btn {
+        width: 100%;
     }
 
     .pq-quiz .pq-share {
