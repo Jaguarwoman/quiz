@@ -332,7 +332,7 @@
         });
 
         this.prevBtn.style.display = page === 0 ? 'none' : '';
-        this.nextBtn.textContent = page >= this.totalPages - 1 ? 'See Results' : 'Next';
+        this.nextBtn.textContent = page >= this.totalPages - 1 ? 'Results' : 'Next';
 
         this.syncPageRowHeights();
     };
@@ -364,6 +364,11 @@
         if (!this.validateCurrentPage()) return;
 
         if (this.currentPage >= this.totalPages - 1) {
+            var missingIndex = this.findFirstMissingAnswer(0, this.total);
+            if (missingIndex !== null) {
+                this.goToQuestion(missingIndex);
+                return;
+            }
             this.showResults();
             return;
         }
@@ -378,18 +383,36 @@
     Quiz.prototype.validateCurrentPage = function() {
         var start = this.currentPage * this.perPage;
         var end = Math.min(start + this.perPage, this.total);
+        var missingIndex = this.findFirstMissingAnswer(start, end);
 
-        for (var i = start; i < end; i++) {
-            var ans = this.answers[i];
-            if (!ans) {
-                var missedQuestion = this.container.querySelector('[data-question="' + i + '"]');
-                if (missedQuestion) {
-                    missedQuestion.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-                return false;
+        if (missingIndex !== null) {
+            var missedQuestion = this.container.querySelector('[data-question="' + missingIndex + '"]');
+            if (missedQuestion) {
+                missedQuestion.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
+            return false;
         }
         return true;
+    };
+
+    Quiz.prototype.findFirstMissingAnswer = function(start, end) {
+        for (var i = start; i < end; i++) {
+            if (!this.answers[i]) {
+                return i;
+            }
+        }
+        return null;
+    };
+
+    Quiz.prototype.goToQuestion = function(index) {
+        this.currentPage = Math.floor(index / this.perPage);
+        this.showPage(this.currentPage);
+        this.updateProgress();
+        this.saveState();
+        var missedQuestion = this.container.querySelector('[data-question="' + index + '"]');
+        if (missedQuestion) {
+            missedQuestion.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
     };
 
     Quiz.prototype.showValidation = function(msg) {
