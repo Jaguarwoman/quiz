@@ -125,7 +125,7 @@ class Personality_Quiz {
     
     public function render_results_box($post) {
         $results = get_post_meta($post->ID, '_quiz_results', true);
-        if (empty($results)) $results = [['name'=>'','slug'=>'','priority'=>1,'description'=>'','image_id'=>0]];
+        if (empty($results)) $results = [['name'=>'','slug'=>'','priority'=>1,'description'=>'','image_id'=>0,'image_id_secondary'=>0]];
         ?>
         <div class="pq-results-wrap">
             <p class="pq-section-intro"><?php _e('Define possible outcomes. Lower priority wins ties.', 'personality-quiz'); ?></p>
@@ -133,13 +133,14 @@ class Personality_Quiz {
                 <?php foreach ($results as $i => $r) $this->render_result_row($i, $r); ?>
             </div>
             <button type="button" class="button pq-add-result"><?php _e('+ Add Result', 'personality-quiz'); ?></button>
-            <script type="text/html" id="pq-result-template"><?php $this->render_result_row('{{INDEX}}', ['name'=>'','slug'=>'','priority'=>1,'description'=>'','image_id'=>0]); ?></script>
+            <script type="text/html" id="pq-result-template"><?php $this->render_result_row('{{INDEX}}', ['name'=>'','slug'=>'','priority'=>1,'description'=>'','image_id'=>0,'image_id_secondary'=>0]); ?></script>
         </div>
         <?php
     }
     
     private function render_result_row($i, $r) {
         $img = !empty($r['image_id']) ? wp_get_attachment_image_url($r['image_id'], 'thumbnail') : '';
+        $secondary_img = !empty($r['image_id_secondary']) ? wp_get_attachment_image_url($r['image_id_secondary'], 'thumbnail') : '';
         $title = $r['name'] ?: __('New Result', 'personality-quiz');
         $collapsed = $r['name'] ? 'collapsed' : '';
         ?>
@@ -164,6 +165,14 @@ class Personality_Quiz {
                         <div class="pq-image-preview"><?php if ($img): ?><img src="<?php echo esc_url($img); ?>" alt=""><?php endif; ?></div>
                         <button type="button" class="button pq-select-image"><?php _e('Select Image', 'personality-quiz'); ?></button>
                         <button type="button" class="button pq-remove-image" <?php if (!$img) echo 'style="display:none;"'; ?>><?php _e('Remove', 'personality-quiz'); ?></button>
+                    </div>
+                </div>
+                <div class="pq-field"><label><?php _e('Secondary Image', 'personality-quiz'); ?></label>
+                    <div class="pq-image-field">
+                        <input type="hidden" name="pq_results[<?php echo esc_attr($i); ?>][image_id_secondary]" value="<?php echo esc_attr($r['image_id_secondary'] ?? 0); ?>" class="pq-image-id">
+                        <div class="pq-image-preview"><?php if ($secondary_img): ?><img src="<?php echo esc_url($secondary_img); ?>" alt=""><?php endif; ?></div>
+                        <button type="button" class="button pq-select-image"><?php _e('Select Image', 'personality-quiz'); ?></button>
+                        <button type="button" class="button pq-remove-image" <?php if (!$secondary_img) echo 'style="display:none;"'; ?>><?php _e('Remove', 'personality-quiz'); ?></button>
                     </div>
                 </div>
             </div>
@@ -263,6 +272,7 @@ class Personality_Quiz {
                 while (in_array($slug, $used_slugs)) $slug = $base . '-' . $c++;
                 $used_slugs[] = $slug;
                 $image_id = absint($r['image_id'] ?? 0);
+                $image_id_secondary = absint($r['image_id_secondary'] ?? 0);
                 if (!$image_id) $errors[] = sprintf(__('Result "%s" needs an image.', 'personality-quiz'), $name);
                 $results[] = [
                     'name' => $name,
@@ -270,6 +280,7 @@ class Personality_Quiz {
                     'priority' => max(1, min(100, absint($r['priority'] ?? 1))),
                     'description' => wp_kses_post($r['description'] ?? ''),
                     'image_id' => $image_id,
+                    'image_id_secondary' => $image_id_secondary,
                 ];
             }
         }
@@ -344,10 +355,12 @@ class Personality_Quiz {
         $results_json = [];
         foreach ($results as $r) {
             $img = !empty($r['image_id']) ? wp_get_attachment_image_url($r['image_id'], 'large') : '';
+            $secondary_img = !empty($r['image_id_secondary']) ? wp_get_attachment_image_url($r['image_id_secondary'], 'large') : '';
             $results_json[$r['slug']] = [
                 'name' => $r['name'],
                 'description' => $r['description'],
                 'image' => $img,
+                'secondaryImage' => $secondary_img,
                 'priority' => $r['priority'],
             ];
         }
@@ -391,19 +404,22 @@ class Personality_Quiz {
             
             <!-- Result displays inline here -->
             <div class="pq-result" style="display:none;">
-                <div class="pq-result-image"></div>
-                <div class="pq-result-content">
-                    <h2 class="pq-result-title"></h2>
-                    <div class="pq-result-description"></div>
-                    <div class="pq-share">
-                        <button type="button" class="pq-share-btn pq-copy-link">
-                            <span class="pq-copy-icon" aria-hidden="true">📋</span>
-                            <?php _e('Share Results', 'personality-quiz'); ?>
-                        </button>
-                        <span class="pq-copy-success"><?php _e('Copied!', 'personality-quiz'); ?></span>
-                    </div>
-                    <div class="pq-retake">
-                        <button type="button" class="pq-retake-btn"><?php _e('Take this Quiz', 'personality-quiz'); ?></button>
+                <div class="pq-result-secondary-image"></div>
+                <div class="pq-result-main">
+                    <div class="pq-result-image"></div>
+                    <div class="pq-result-content">
+                        <h2 class="pq-result-title"></h2>
+                        <div class="pq-result-description"></div>
+                        <div class="pq-share">
+                            <button type="button" class="pq-share-btn pq-copy-link">
+                                <span class="pq-copy-icon" aria-hidden="true">📋</span>
+                                <?php _e('Share Results', 'personality-quiz'); ?>
+                            </button>
+                            <span class="pq-copy-success"><?php _e('Copied!', 'personality-quiz'); ?></span>
+                        </div>
+                        <div class="pq-retake">
+                            <button type="button" class="pq-retake-btn"><?php _e('Take this Quiz', 'personality-quiz'); ?></button>
+                        </div>
                     </div>
                 </div>
             </div>

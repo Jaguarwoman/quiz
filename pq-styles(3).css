@@ -510,10 +510,35 @@
 /* Results */
 .pq-quiz .pq-result {
     display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: stretch;
+    padding: 2rem 0;
+}
+
+.pq-quiz .pq-result-secondary-image {
+    display: none;
+    justify-content: center;
+    width: 100%;
+}
+
+.pq-quiz .pq-result-secondary-image.has-image {
+    display: flex;
+}
+
+.pq-quiz .pq-result-secondary-image img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    object-fit: contain;
+}
+
+.pq-quiz .pq-result-main {
+    display: flex;
     flex-direction: row;
     gap: 2rem;
     align-items: flex-start;
-    padding: 2rem 0;
 }
 
 .pq-quiz .pq-result-image {
@@ -647,8 +672,16 @@
     }
     
     .pq-quiz .pq-result {
-        flex-direction: column;
         gap: 1.5rem;
+    }
+
+    .pq-quiz .pq-result-secondary-image {
+        order: 3;
+    }
+
+    .pq-quiz .pq-result-main {
+        flex-direction: column;
+        order: 1;
     }
 
     .pq-quiz .pq-result-image {
