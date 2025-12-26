@@ -398,12 +398,12 @@ class Personality_Quiz {
                     <div class="pq-share">
                         <button type="button" class="pq-share-btn pq-copy-link">
                             <span class="pq-copy-icon" aria-hidden="true">📋</span>
-                            <?php _e('Copy Link', 'personality-quiz'); ?>
+                            <?php _e('Share Results', 'personality-quiz'); ?>
                         </button>
                         <span class="pq-copy-success"><?php _e('Copied!', 'personality-quiz'); ?></span>
                     </div>
                     <div class="pq-retake">
-                        <button type="button" class="pq-retake-btn"><?php _e('Take Quiz Again', 'personality-quiz'); ?></button>
+                        <button type="button" class="pq-retake-btn"><?php _e('Take this Quiz', 'personality-quiz'); ?></button>
                     </div>
                 </div>
             </div>
