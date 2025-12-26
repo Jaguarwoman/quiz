@@ -337,12 +337,34 @@
         this.syncPageRowHeights();
     };
 
+    // =========================================================================
+    // UPDATED HEIGHT SYNC LOGIC
+    // =========================================================================
 
-    // Height syncing disabled - CSS handles layout now
     Quiz.prototype.syncPageRowHeights = function() {
-        return;
+        var activeQuestions = this.container.querySelectorAll('.pq-question.active');
+
+        activeQuestions.forEach(function(q) {
+            var textCol = q.querySelector('.pq-question-content');
+            var imgCol = q.querySelector('.pq-question-image');
+
+            // If both columns exist
+            if(textCol && imgCol) {
+                // 1. Get the height of the Text Column (includes the 250px min-height from CSS)
+                var textHeight = textCol.offsetHeight;
+
+                // 2. Ensure minimum height is respected (though CSS handles it, this is a JS backup)
+                var finalHeight = Math.max(textHeight, 250);
+
+                // 3. Force Image Column to be the same height as Text Column
+                // This prevents the image (e.g. 1024px) from expanding the row
+                imgCol.style.height = finalHeight + 'px';
+            }
+        });
     };
 
+    // =========================================================================
+    // =========================================================================
 
     Quiz.prototype.updateProgress = function() {
         var start = this.currentPage * this.perPage + 1;
