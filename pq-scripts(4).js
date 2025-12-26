@@ -191,6 +191,7 @@
         this.navigation = container.querySelector('.pq-navigation');
         this.progress = container.querySelector('.pq-progress');
         this.resultPanel = container.querySelector('.pq-result');
+        this.resultMain = container.querySelector('.pq-result-main');
 
         this.currentPage = 0;
         this.totalPages = Math.ceil(this.total / this.perPage);
@@ -214,10 +215,12 @@
         this.showPage(this.currentPage);
         this.updateProgress();
         this.syncPageRowHeights();
+        this.syncResultRowHeights();
 
         var self = this;
         window.addEventListener('resize', function() {
             self.syncPageRowHeights();
+            self.syncResultRowHeights();
         });
     };
 
@@ -233,14 +236,18 @@
         this.progress.style.display = 'none';
 
         var imgContainer = this.resultPanel.querySelector('.pq-result-image');
+        var secondaryImgContainer = this.resultPanel.querySelector('.pq-result-secondary-image');
         var titleEl = this.resultPanel.querySelector('.pq-result-title');
         var descEl = this.resultPanel.querySelector('.pq-result-description');
 
         imgContainer.innerHTML = result.image ? ('<img src="' + result.image + '" alt="' + result.name + '">') : '';
+        secondaryImgContainer.innerHTML = result.secondaryImage ? ('<img src="' + result.secondaryImage + '" alt="' + result.name + '">') : '';
+        secondaryImgContainer.classList.toggle('has-image', !!result.secondaryImage);
         titleEl.textContent = result.name;
         descEl.innerHTML = result.description || '';
 
         this.resultPanel.style.display = 'block';
+        this.syncResultRowHeights();
         this.bindEvents();
     };
 
@@ -365,6 +372,21 @@
 
     // =========================================================================
     // =========================================================================
+
+    Quiz.prototype.syncResultRowHeights = function() {
+        if (!this.resultPanel || this.resultPanel.style.display === 'none') {
+            return;
+        }
+
+        var textCol = this.resultPanel.querySelector('.pq-result-content');
+        var imgCol = this.resultPanel.querySelector('.pq-result-image');
+
+        if (textCol && imgCol) {
+            var textHeight = textCol.offsetHeight;
+            var finalHeight = Math.max(textHeight, 250);
+            imgCol.style.height = finalHeight + 'px';
+        }
+    };
 
     Quiz.prototype.updateProgress = function() {
         var start = this.currentPage * this.perPage + 1;
@@ -491,14 +513,18 @@
         this.hideValidation();
 
         var imgContainer = this.resultPanel.querySelector('.pq-result-image');
+        var secondaryImgContainer = this.resultPanel.querySelector('.pq-result-secondary-image');
         var titleEl = this.resultPanel.querySelector('.pq-result-title');
         var descEl = this.resultPanel.querySelector('.pq-result-description');
 
         imgContainer.innerHTML = result.image ? ('<img src="' + result.image + '" alt="' + result.name + '">') : '';
+        secondaryImgContainer.innerHTML = result.secondaryImage ? ('<img src="' + result.secondaryImage + '" alt="' + result.name + '">') : '';
+        secondaryImgContainer.classList.toggle('has-image', !!result.secondaryImage);
         titleEl.textContent = result.name;
         descEl.innerHTML = result.description || '';
 
         this.resultPanel.style.display = 'block';
+        this.syncResultRowHeights();
         this.scrollToTop();
     };
 
@@ -523,6 +549,7 @@
         this.navigation.style.display = '';
         this.progress.style.display = '';
         this.resultPanel.style.display = 'none';
+        this.resultPanel.querySelector('.pq-result-secondary-image').classList.remove('has-image');
 
         this.showPage(0);
         this.updateProgress();
