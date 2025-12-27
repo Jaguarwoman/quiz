@@ -158,7 +158,7 @@ class Personality_Quiz {
                 <div class="pq-field pq-field-small"><label><?php _e('Priority', 'personality-quiz'); ?></label>
                     <input type="number" name="pq_results[<?php echo esc_attr($i); ?>][priority]" value="<?php echo esc_attr($r['priority']); ?>" class="small-text" min="1" max="100"></div>
                 <div class="pq-field"><label><?php _e('Description', 'personality-quiz'); ?></label>
-                    <textarea name="pq_results[<?php echo esc_attr($i); ?>][description]" rows="3" class="large-text"><?php echo esc_textarea($r['description']); ?></textarea></div>
+                    <textarea name="pq_results[<?php echo esc_attr($i); ?>][description]" rows="15" class="large-text pq-result-description"><?php echo esc_textarea($r['description']); ?></textarea></div>
                 <div class="pq-field"><label><?php _e('Image', 'personality-quiz'); ?> <span class="required">*</span></label>
                     <div class="pq-image-field">
                         <input type="hidden" name="pq_results[<?php echo esc_attr($i); ?>][image_id]" value="<?php echo esc_attr($r['image_id']); ?>" class="pq-image-id">
@@ -186,7 +186,7 @@ class Personality_Quiz {
         if (empty($questions)) $questions = [['text'=>'','image_id'=>0,'answers'=>[['text'=>'','result_slug'=>''],['text'=>'','result_slug'=>'']]]];
         ?>
         <div class="pq-questions-wrap">
-            <p class="pq-section-intro"><?php _e('Each question needs text, an image, and at least 2 answers.', 'personality-quiz'); ?></p>
+            <p class="pq-section-intro"><?php _e('Each question needs text and at least 2 answers. Images are optional.', 'personality-quiz'); ?></p>
             <div id="pq-questions-container">
                 <?php foreach ($questions as $qi => $q) $this->render_question_row($qi, $q, $results); ?>
             </div>
@@ -215,7 +215,7 @@ class Personality_Quiz {
             <div class="pq-row-content">
                 <div class="pq-field"><label><?php _e('Question Text', 'personality-quiz'); ?> <span class="required">*</span></label>
                     <textarea name="pq_questions[<?php echo esc_attr($qi); ?>][text]" rows="2" class="large-text pq-question-text" maxlength="500"><?php echo esc_textarea($q['text']); ?></textarea></div>
-                <div class="pq-field"><label><?php _e('Image', 'personality-quiz'); ?> <span class="required">*</span></label>
+                <div class="pq-field"><label><?php _e('Image', 'personality-quiz'); ?></label>
                     <div class="pq-image-field">
                         <input type="hidden" name="pq_questions[<?php echo esc_attr($qi); ?>][image_id]" value="<?php echo esc_attr($q['image_id']); ?>" class="pq-image-id">
                         <div class="pq-image-preview"><?php if ($img): ?><img src="<?php echo esc_url($img); ?>" alt=""><?php endif; ?></div>
@@ -297,7 +297,6 @@ class Personality_Quiz {
                 $text = sanitize_textarea_field($q['text'] ?? '');
                 if (!$text) continue;
                 $image_id = absint($q['image_id'] ?? 0);
-                if (!$image_id) $errors[] = sprintf(__('Question %d needs an image.', 'personality-quiz'), $qn);
                 $answers = [];
                 if (isset($q['answers']) && is_array($q['answers'])) {
                     foreach ($q['answers'] as $a) {
