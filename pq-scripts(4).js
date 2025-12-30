@@ -16,6 +16,7 @@
         var $ = jQuery;
         var resultIdx = $('#pq-results-container .pq-result-row').length;
         var questionIdx = $('#pq-questions-container .pq-question-row').length;
+        var $secondaryToggle = $('#pq_allow_secondary_results');
 
         // Toggle collapse
         $(document).on('click', '.pq-toggle, .pq-row-header', function(e) {
@@ -108,9 +109,17 @@
                 var $sel = $(this), val = $sel.val();
                 $sel.find('option:not(:first)').remove();
                 results.forEach(function(r) {
-                    $sel.append('<option value="' + r.slug + '">' + r.name + '</option>');
+                $sel.append('<option value="' + r.slug + '">' + r.name + '</option>');
                 });
                 $sel.val(val);
+            });
+            toggleSecondaryResultSelects();
+        }
+
+        function toggleSecondaryResultSelects() {
+            var enabled = $secondaryToggle.is(':checked');
+            $('.pq-result-select-secondary').each(function() {
+                $(this).toggleClass('is-hidden', !enabled);
             });
         }
 
@@ -164,6 +173,11 @@
                 setTimeout(function() { $msg.removeClass('visible'); }, 2000);
             });
         });
+
+        if ($secondaryToggle.length) {
+            $secondaryToggle.on('change', toggleSecondaryResultSelects);
+            toggleSecondaryResultSelects();
+        }
     }
 
     // =========================================================================
@@ -175,6 +189,7 @@
         this.quizId = container.dataset.quizId;
         this.perPage = parseInt(container.dataset.perPage, 10) || 5;
         this.total = parseInt(container.dataset.total, 10);
+        this.allowSecondaryResults = container.dataset.allowSecondary === '1';
 
         try {
             this.resultsData = JSON.parse(container.dataset.results || '{}');
@@ -314,6 +329,7 @@
         var qIndex = question.dataset.question;
         var aIndex = btn.dataset.answer;
         var resultSlug = btn.dataset.result;
+        var secondarySlug = btn.dataset.resultSecondary;
 
         question.querySelectorAll('.pq-answer').forEach(function(a) {
             a.classList.remove('selected');
@@ -322,7 +338,8 @@
 
         this.answers[qIndex] = {
             answerIndex: aIndex,
-            resultSlug: resultSlug || ''
+            resultSlug: resultSlug || '',
+            resultSecondarySlug: secondarySlug || ''
         };
 
         this.saveState();
@@ -473,11 +490,21 @@
         var priorities = {};
 
         for (var qIndex in this.answers) {
-            var slug = this.answers[qIndex].resultSlug;
-            if (slug && this.resultsData[slug]) {
-                counts[slug] = (counts[slug] || 0) + 1;
-                priorities[slug] = this.resultsData[slug].priority || 99;
-            }
+            var primarySlug = this.answers[qIndex].resultSlug;
+            var secondarySlug = this.answers[qIndex].resultSecondarySlug;
+            var slugs = [];
+
+            if (primarySlug) slugs.push(primarySlug);
+            if (this.allowSecondaryResults && secondarySlug) slugs.push(secondarySlug);
+
+            slugs.filter(function(value, index, self) {
+                return self.indexOf(value) === index;
+            }).forEach(function(slug) {
+                if (slug && this.resultsData[slug]) {
+                    counts[slug] = (counts[slug] || 0) + 1;
+                    priorities[slug] = this.resultsData[slug].priority || 99;
+                }
+            }, this);
         }
 
         var maxCount = 0;
