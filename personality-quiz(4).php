@@ -102,12 +102,20 @@ class Personality_Quiz {
     public function render_settings_box($post) {
         wp_nonce_field('pq_save', 'pq_nonce');
         $per_page = get_post_meta($post->ID, '_quiz_questions_per_page', true) ?: 5;
+        $allow_secondary_results = (bool) get_post_meta($post->ID, '_quiz_allow_secondary_results', true);
         $sc = '[personality_quiz id="' . $post->ID . '"]';
         ?>
         <div class="pq-settings-grid">
             <div class="pq-setting-item">
                 <label for="pq_per_page"><?php _e('Questions Per Page', 'personality-quiz'); ?></label>
                 <input type="number" id="pq_per_page" name="pq_per_page" value="<?php echo esc_attr($per_page); ?>" min="1" max="20" class="small-text">
+            </div>
+            <div class="pq-setting-item">
+                <label for="pq_allow_secondary_results"><?php _e('Enable Extra Result', 'personality-quiz'); ?></label>
+                <label class="pq-checkbox-label">
+                    <input type="checkbox" id="pq_allow_secondary_results" name="pq_allow_secondary_results" value="1" <?php checked($allow_secondary_results); ?>>
+                    <?php _e('Allow a second result per answer', 'personality-quiz'); ?>
+                </label>
             </div>
             <?php if ($post->post_status !== 'auto-draft'): ?>
             <div class="pq-setting-item">
@@ -242,6 +250,12 @@ class Personality_Quiz {
                     <option value="<?php echo esc_attr($slug); ?>" <?php selected($a['result_slug'], $slug); ?>><?php echo esc_html($r['name']); ?></option>
                 <?php endif; endforeach; endif; ?>
             </select>
+            <select name="pq_questions[<?php echo esc_attr($qi); ?>][answers][<?php echo esc_attr($ai); ?>][result_slug_secondary]" class="pq-result-select pq-result-select-secondary">
+                <option value=""><?php _e('— Extra Result —', 'personality-quiz'); ?></option>
+                <?php if ($results): foreach ($results as $r): if ($r['name']): $slug = $r['slug'] ?: sanitize_title($r['name']); ?>
+                    <option value="<?php echo esc_attr($slug); ?>" <?php selected($a['result_slug_secondary'] ?? '', $slug); ?>><?php echo esc_html($r['name']); ?></option>
+                <?php endif; endforeach; endif; ?>
+            </select>
             <button type="button" class="pq-remove-answer button-link"><span class="dashicons dashicons-no-alt"></span></button>
         </div>
         <?php
@@ -258,7 +272,9 @@ class Personality_Quiz {
         
         $errors = [];
         $per_page = isset($_POST['pq_per_page']) ? max(1, min(20, absint($_POST['pq_per_page']))) : 5;
+        $allow_secondary_results = !empty($_POST['pq_allow_secondary_results']) ? 1 : 0;
         update_post_meta($post_id, '_quiz_questions_per_page', $per_page);
+        update_post_meta($post_id, '_quiz_allow_secondary_results', $allow_secondary_results);
         
         // Results
         $results = [];
@@ -303,8 +319,14 @@ class Personality_Quiz {
                         $atext = sanitize_text_field($a['text'] ?? '');
                         if (!$atext) continue;
                         $aslug = sanitize_title($a['result_slug'] ?? '');
+                        $aslug_secondary = sanitize_title($a['result_slug_secondary'] ?? '');
                         if ($aslug && !in_array($aslug, $valid_slugs)) $aslug = '';
-                        $answers[] = ['text' => $atext, 'result_slug' => $aslug];
+                        if ($aslug_secondary && !in_array($aslug_secondary, $valid_slugs)) $aslug_secondary = '';
+                        $answers[] = [
+                            'text' => $atext,
+                            'result_slug' => $aslug,
+                            'result_slug_secondary' => $aslug_secondary,
+                        ];
                     }
                 }
                 if (count($answers) < 2) $errors[] = sprintf(__('Question %d needs at least 2 answers.', 'personality-quiz'), $qn);
@@ -346,6 +368,7 @@ class Personality_Quiz {
         $questions = get_post_meta($quiz_id, '_quiz_questions', true);
         $results = get_post_meta($quiz_id, '_quiz_results', true);
         $per_page = get_post_meta($quiz_id, '_quiz_questions_per_page', true) ?: 5;
+        $allow_secondary_results = (bool) get_post_meta($quiz_id, '_quiz_allow_secondary_results', true);
         
         if (empty($questions)) return '<div class="pq-error"><p>' . __('This quiz has no questions.', 'personality-quiz') . '</p></div>';
         if (empty($results)) return '<div class="pq-error"><p>' . __('This quiz has no results configured.', 'personality-quiz') . '</p></div>';
@@ -370,6 +393,7 @@ class Personality_Quiz {
              data-quiz-id="<?php echo esc_attr($quiz_id); ?>" 
              data-per-page="<?php echo esc_attr($per_page); ?>" 
              data-total="<?php echo count($questions); ?>"
+             data-allow-secondary="<?php echo $allow_secondary_results ? '1' : '0'; ?>"
              data-results="<?php echo esc_attr(json_encode($results_json, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP)); ?>">
             
             <div class="pq-progress" aria-live="polite"><span class="pq-progress-text"></span></div>
@@ -385,7 +409,7 @@ class Personality_Quiz {
                         <h5 class="pq-question-text"><?php echo esc_html($q['text']); ?></h5>
                         <div class="pq-answers" role="group" aria-label="<?php esc_attr_e('Answer choices', 'personality-quiz'); ?>">
                             <?php foreach ($q['answers'] as $ai => $a): ?>
-                            <button type="button" class="pq-answer" data-answer="<?php echo esc_attr($ai); ?>" data-result="<?php echo esc_attr($a['result_slug']); ?>"><?php echo esc_html($a['text']); ?></button>
+                            <button type="button" class="pq-answer" data-answer="<?php echo esc_attr($ai); ?>" data-result="<?php echo esc_attr($a['result_slug']); ?>" data-result-secondary="<?php echo esc_attr($a['result_slug_secondary'] ?? ''); ?>"><?php echo esc_html($a['text']); ?></button>
                             <?php endforeach; ?>
                         </div>
                     </div>

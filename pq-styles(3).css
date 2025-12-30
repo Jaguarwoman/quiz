@@ -67,6 +67,18 @@
     margin-bottom: 6px;
 }
 
+.pq-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 400;
+    color: #1d2327;
+}
+
+.pq-checkbox-label input[type="checkbox"] {
+    margin: 0;
+}
+
 .pq-shortcode-wrap {
     display: flex;
     align-items: center;
@@ -260,6 +272,10 @@
 .pq-result-select {
     width: 160px;
     flex-shrink: 0;
+}
+
+.pq-result-select-secondary.is-hidden {
+    display: none;
 }
 
 .pq-remove-answer {
