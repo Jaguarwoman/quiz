@@ -368,6 +368,16 @@
     Quiz.prototype.syncPageRowHeights = function() {
         var activeQuestions = this.container.querySelectorAll('.pq-question.active');
 
+        if (window.matchMedia('(max-width: 768px)').matches) {
+            activeQuestions.forEach(function(q) {
+                var imgCol = q.querySelector('.pq-question-image');
+                if (imgCol) {
+                    imgCol.style.height = '';
+                }
+            });
+            return;
+        }
+
         activeQuestions.forEach(function(q) {
             var textCol = q.querySelector('.pq-question-content');
             var imgCol = q.querySelector('.pq-question-image');
