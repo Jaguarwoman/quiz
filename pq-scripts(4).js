@@ -344,6 +344,7 @@
 
         this.saveState();
         this.hideValidation();
+        this.clearQuestionValidation(question);
         this.syncPageRowHeights();
     };
 
@@ -408,6 +409,13 @@
         var textCol = this.resultPanel.querySelector('.pq-result-content');
         var imgCol = this.resultPanel.querySelector('.pq-result-image');
 
+        if (window.matchMedia('(max-width: 768px)').matches) {
+            if (imgCol) {
+                imgCol.style.height = '';
+            }
+            return;
+        }
+
         if (textCol && imgCol) {
             var textHeight = textCol.offsetHeight;
             var finalHeight = Math.max(textHeight, 250);
@@ -457,8 +465,10 @@
         var missingIndex = this.findFirstMissingAnswer(start, end);
 
         if (missingIndex !== null) {
+            this.clearAllQuestionValidations();
             var missedQuestion = this.container.querySelector('[data-question="' + missingIndex + '"]');
             if (missedQuestion) {
+                this.showQuestionValidation(missedQuestion);
                 missedQuestion.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
             return false;
@@ -482,8 +492,34 @@
         this.saveState();
         var missedQuestion = this.container.querySelector('[data-question="' + index + '"]');
         if (missedQuestion) {
+            this.clearAllQuestionValidations();
+            this.showQuestionValidation(missedQuestion);
             missedQuestion.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
+    };
+
+    Quiz.prototype.showQuestionValidation = function(question) {
+        var warning = question.querySelector('.pq-question-warning');
+        if (!warning) return;
+        warning.textContent = 'Please, complete all questions before proceeding';
+        warning.classList.add('is-visible', 'shake');
+        warning.addEventListener('animationend', function() {
+            warning.classList.remove('shake');
+        }, { once: true });
+    };
+
+    Quiz.prototype.clearQuestionValidation = function(question) {
+        var warning = question.querySelector('.pq-question-warning');
+        if (!warning) return;
+        warning.classList.remove('is-visible', 'shake');
+        warning.textContent = '';
+    };
+
+    Quiz.prototype.clearAllQuestionValidations = function() {
+        this.container.querySelectorAll('.pq-question-warning.is-visible').forEach(function(warning) {
+            warning.classList.remove('is-visible', 'shake');
+            warning.textContent = '';
+        });
     };
 
     Quiz.prototype.showValidation = function(msg) {

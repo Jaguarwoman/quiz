@@ -427,6 +427,30 @@
     color: inherit;
 }
 
+.pq-quiz .pq-question-warning {
+    display: none;
+    margin: 0 0 1rem 0;
+    color: #d63638;
+    font-style: italic;
+}
+
+.pq-quiz .pq-question-warning.is-visible {
+    display: block;
+}
+
+.pq-quiz .pq-question-warning.shake {
+    animation: pq-warning-shake 0.45s ease-in-out;
+}
+
+@keyframes pq-warning-shake {
+    0% { transform: translateX(0); }
+    20% { transform: translateX(-3px); }
+    40% { transform: translateX(3px); }
+    60% { transform: translateX(-2px); }
+    80% { transform: translateX(2px); }
+    100% { transform: translateX(0); }
+}
+
 /* Answers */
 .pq-quiz .pq-answers {
     display: flex;
@@ -726,6 +750,8 @@
         max-width: 100%;
         min-width: 0;
         margin: 0 auto;
+        min-height: 0;
+        height: auto;
     }
 
     .pq-quiz .pq-question-content,
@@ -738,6 +764,10 @@
         text-align: center;
         font-size: 1.125rem;
         line-height: 1.4;
+    }
+
+    .pq-quiz .pq-question-warning {
+        text-align: center;
     }
 
     .pq-quiz .pq-navigation {
