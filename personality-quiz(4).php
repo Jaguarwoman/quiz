@@ -407,6 +407,7 @@ class Personality_Quiz {
                     <?php if ($img): ?><div class="pq-question-image"><img src="<?php echo esc_url($img); ?>" alt="<?php echo esc_attr($alt); ?>" loading="lazy"></div><?php endif; ?>
                     <div class="pq-question-content">
                         <h5 class="pq-question-text"><?php echo esc_html($q['text']); ?></h5>
+                        <div class="pq-question-warning" role="alert" aria-live="polite"></div>
                         <div class="pq-answers" role="group" aria-label="<?php esc_attr_e('Answer choices', 'personality-quiz'); ?>">
                             <?php foreach ($q['answers'] as $ai => $a): ?>
                             <button type="button" class="pq-answer" data-answer="<?php echo esc_attr($ai); ?>" data-result="<?php echo esc_attr($a['result_slug']); ?>" data-result-secondary="<?php echo esc_attr($a['result_slug_secondary'] ?? ''); ?>"><?php echo esc_html($a['text']); ?></button>
